@@ -78,13 +78,16 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    sudo
     docker
+    kubectl
     git
     zsh-syntax-highlighting
     zsh-autosuggestions
     zsh-completions
+    zsh-autocomplete
     autoupdate
+    gcloud
+    web-search
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -114,36 +117,58 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias upgrade-all="sudo apt update; sudo apt full-upgrade -y; sudo apt autoremove -y; sudo apt autoclean; omz update"
+
+alias ibrew='arch -x86_64 /usr/local/bin/brew'
+alias mbrew='arch -arm64e /opt/homebrew/bin/brew'
+alias update-all='ibrew update; ibrew upgrade; mbrew update; mbrew upgrade; mbrew upgrade --cask --greedy; upgrade_oh_my_zsh_all;'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # zsh-completions
-autoload -U compinit && compinit
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+
+# nvm
+export NVM_DIR="$HOME/.nvm"
+  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/phucnt/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$('/Users/phucnguyen/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "/home/phucnt/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/phucnt/miniconda3/etc/profile.d/conda.sh"
+    if [ -f "/Users/phucnguyen/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/phucnguyen/miniconda3/etcs/profile.d/conda.sh"
     else
-        export PATH="/home/phucnt/miniconda3/bin:$PATH"
+        export PATH="/Users/phucnguyen/miniconda3/bin:$PATH"
     fi
 fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-eval "$(register-python-argcomplete conda)"
+# libpg
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+# mysql
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+# ignoredups for history
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
+# Google Cloud SDK
+source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+# aws
+source "$HOME/.aws/.env"
+# Go
+export GOPATH="$HOME"
+# 1Password CLI
+eval "$(op completion zsh)"; compdef _op op
 
-# .pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
+autoload -U compinit; compinit
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+zstyle ':autocomplete:*' min-input 1
